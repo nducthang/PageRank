@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-    data = pd.read_csv('./data2/web-Stanford.txt', sep="\t", header=None, skiprows=4)
+    data = pd.read_csv('./data/testmini.txt', sep=" ", header=None, skiprows=4)
     G = nx.DiGraph()
     for i in range(len(data)):
         G.add_node(data.iloc[i][0])
@@ -11,16 +11,19 @@ if __name__ == '__main__':
         G.add_edge(data.iloc[i][0], data.iloc[i][1])
 
     N = len(G)
-    d = 0.85
+    d = 0.9
     rank = {}
     for node in G.nodes:
         rank[node] = 1/N
     
-    for _ in range(10):
+    for _ in range(10000):
         for node in G.nodes:
+            if len(G.out_edges(node)) == 0:
+                for j in G.nodes:
+                    G.add_edge(node, j)
             rank_sum = 0
-            edge_outlinks = G.out_edges(node)
-            for _ , j in edge_outlinks:
+            edges = G.in_edges(node)
+            for j , _ in edges:
                 outlinks = len(G.out_edges(j))
                 if outlinks > 0:
                     rank_sum += rank[j]/len(G.out_edges(j))
@@ -31,7 +34,7 @@ if __name__ == '__main__':
     print(rank)
 
     # test display graph
-    display = 0
+    display = 1
     if display:
         pos = nx.spring_layout(G)
         values = [rank.get(node, 0.25) for node in G.nodes()]
